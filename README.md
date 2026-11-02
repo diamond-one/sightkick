@@ -2,7 +2,21 @@
 
 A game for learning drums with sheet music for thousands of songs. Mute the drum track, play along with your kit, and chase your best score.
 
-> **Fork note.** This fork tracks [tonygoldcrest/sightkick](https://github.com/tonygoldcrest/sightkick). The sheet uses the page width, up to 1200px, and short or narrow windows tighten the song header so more of the chart stays on screen. Proposed upstream in [pull request #66](https://github.com/tonygoldcrest/sightkick/pull/66).
+> **Fork note.** This fork tracks [tonygoldcrest/sightkick](https://github.com/tonygoldcrest/sightkick). The changes below are proposed upstream in [pull request #67](https://github.com/tonygoldcrest/sightkick/pull/67).
+>
+> * The sheet uses the window width, up to 1200px, and short or narrow windows tighten the song header.
+> * The drum legend has less side padding and can be minimised.
+> * The Windows File menu is removed. It only offered open and close.
+> * The difficulty filter and settings stay visible when the window is narrowed.
+> * On a narrow window, long song titles stop at 28 characters so the charter, difficulty, and score stay on the row.
+> * Local songs have a play button on the album art and preview from the middle of the track.
+> * A downloaded song in the global search shows that play button instead of a tick.
+> * Songs already in the library folder show up here, including ones downloaded by the installed SightKick.
+> * Charter names no longer appear as raw `<color=` tags.
+> * Clicking a charter name opens the global search for that charter.
+> * While a preview is playing, the arrow keys or the mouse wheel preview the song above or below.
+> * In practice or perform, the right arrow opens the next song. The left arrow returns to the start, and a second press opens the previous song.
+> * A song can be removed from the global search or from the local song menu, without opening the folder.
 
 <h1 align="center">
   <a href="https://sightkick.dev">Guide</a> |
