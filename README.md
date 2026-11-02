@@ -2,6 +2,8 @@
 
 A game for learning drums with sheet music for thousands of songs. Mute the drum track, play along with your kit, and chase your best score.
 
+> **Fork note.** This fork tracks [tonygoldcrest/sightkick](https://github.com/tonygoldcrest/sightkick). The sheet uses the page width, up to 1200px, and short or narrow windows tighten the song header so more of the chart stays on screen. Proposed upstream in [pull request #66](https://github.com/tonygoldcrest/sightkick/pull/66).
+
 <h1 align="center">
   <a href="https://sightkick.dev">Guide</a> |
   <a href="https://github.com/tonygoldcrest/sightkick/releases">Download</a> |
