@@ -11,9 +11,16 @@ interface Props {
   canSplit: boolean;
   splitting: boolean;
   onSplit: () => void;
+  onDelete: () => void;
 }
 
-export function SongMenu({ dir, canSplit, splitting, onSplit }: Props) {
+export function SongMenu({
+  dir,
+  canSplit,
+  splitting,
+  onSplit,
+  onDelete,
+}: Props) {
   const { stemToolsStatus } = useStemToolsContext();
   const [isOpen, setIsOpen] = useState(false);
   const showSplit = stemToolsStatus === 'ready' && canSplit;
@@ -45,13 +52,17 @@ export function SongMenu({ dir, canSplit, splitting, onSplit }: Props) {
               onSplit();
               close();
             }}
+            onDelete={() => {
+              onDelete();
+              close();
+            }}
           />
         </div>
       }
     >
       <IconButton
         data-testid="song-menu-trigger"
-        className="mt-auto"
+        className="mt-auto mobile:h-11 mobile:w-11"
         icon={faEllipsisVertical}
         onClick={(event) => {
           event.preventDefault();

@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { neighborSongId } from '../SongListView/helpers';
+import { useSongPlaylist } from '../../context/SongPlaylistContext';
+import { isTypingTarget } from '../../input';
 import { TARGET_ROW_WIDTH } from '../../../chart-parser/renderer';
 import { App, Button, Divider, InputNumber, Layout, Spin, Switch } from 'antd';
 import { Content } from 'antd/es/layout/layout';
@@ -45,6 +48,7 @@ export function SongView() {
     showTempo,
     countIn,
     showReference,
+    setShowReference,
     zoom,
   } = useSongViewSettings();
   const { notification, message } = App.useApp();
@@ -59,6 +63,7 @@ export function SongView() {
   }, [searchParams]);
   const policy = useMemo(() => resolveModePolicy(gameMode), [gameMode]);
   const navigate = useNavigate();
+  const playlist = useSongPlaylist();
   const { fileData, format, songData, trackData } = useSongLoader(id);
   const [rowWidth, setRowWidth] = useState(TARGET_ROW_WIDTH);
   const handleRowWidth = useCallback((width: number) => {
@@ -167,6 +172,19 @@ export function SongView() {
     setIsScoreModalOpen(false);
     navigate('/');
   };
+  const openNeighbor = useCallback(
+    (delta: 1 | -1) => {
+      const nextId = neighborSongId(playlist, id, delta);
+
+      if (!nextId) {
+        return;
+      }
+
+      setIsScoreModalOpen(false);
+      navigate(`/${nextId}?gameMode=${gameMode ?? 'perform'}`);
+    },
+    [playlist, id, gameMode, navigate],
+  );
   const onRetry = () => {
     setIsScoreModalOpen(false);
     playFromTick(0);
@@ -282,6 +300,58 @@ export function SongView() {
   );
 
   useEffect(() => {
+    if (isLoading) {
+      return undefined;
+    }
+
+    const onKey = (event: KeyboardEvent) => {
+      if (
+        event.repeat ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        isTypingTarget(event.target) ||
+        (event.code !== 'ArrowLeft' && event.code !== 'ArrowRight')
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      if (event.code === 'ArrowRight') {
+        openNeighbor(1);
+
+        return;
+      }
+
+      const atStart = timeStore.get() <= delaySeconds + 0.4;
+
+      if (!atStart) {
+        engine?.setLoopRegion(undefined);
+        onPracticeRangeChange(undefined);
+        seekSeconds(delaySeconds);
+
+        return;
+      }
+
+      openNeighbor(-1);
+    };
+
+    window.addEventListener('keydown', onKey, true);
+
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [
+    isLoading,
+    openNeighbor,
+    timeStore,
+    delaySeconds,
+    engine,
+    onPracticeRangeChange,
+    seekSeconds,
+  ]);
+
+  useEffect(() => {
     window.electron.ipcRenderer.sendMessage('prevent-sleep');
 
     return () => {
@@ -312,7 +382,7 @@ export function SongView() {
         scoreData={scoreData}
       />
       <div
-        className="flex flex-wrap items-center p-4 gap-5 min-w-0 short:gap-3 short:px-3 short:py-2 narrow:gap-3 narrow:px-3 narrow:py-2"
+        className="flex min-w-0 shrink-0 flex-wrap items-center gap-5 p-4 short:gap-3 short:px-3 short:py-2 narrow:grid narrow:w-full narrow:grid-cols-[auto_auto_minmax(0,1fr)_auto] narrow:gap-x-3 narrow:gap-y-2 narrow:p-3"
         style={{ background: 'var(--gradient-header)' }}
       >
         <Button
@@ -352,7 +422,7 @@ export function SongView() {
           size="large"
         />
 
-        <div className="min-w-0 narrow:flex-1">
+        <div className="min-w-0 narrow:col-start-3 narrow:row-start-1">
           <div className="text-text-body font-ui text-[18px] truncate">
             {songData?.name}
           </div>
@@ -363,7 +433,7 @@ export function SongView() {
           </div>
         </div>
 
-        <div className="contents narrow:flex narrow:basis-full narrow:order-last narrow:min-w-0">
+        <div className="contents narrow:col-span-4 narrow:row-start-2 narrow:flex narrow:min-w-0">
           <Playback
             timeStore={timeStore}
             disabled={!isReady}
@@ -379,7 +449,7 @@ export function SongView() {
           />
         </div>
         {(policy.speedControl || policy.looping) && (
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 narrow:col-span-4 narrow:row-start-3">
             {policy.speedControl && (
               <div className="flex gap-2 items-center">
                 <div className="text-text-faint">Speed:</div>
@@ -426,7 +496,7 @@ export function SongView() {
             )}
           </div>
         )}
-        <div className="shrink-0">
+        <div className="shrink-0 narrow:col-start-4 narrow:row-start-1 narrow:justify-self-end">
           <SettingsButton
             page="song-view"
             volumeSliders={volumeSliders}
@@ -472,6 +542,7 @@ export function SongView() {
               onRowWidth={handleRowWidth}
               enableColors={enableColors}
               showReference={showReference}
+              onShowReferenceChange={setShowReference}
               vexflowContainerRef={vexflowContainerRef}
               onSelectMeasure={(measure, event) => {
                 if ((event.ctrlKey || event.metaKey) && chart) {
