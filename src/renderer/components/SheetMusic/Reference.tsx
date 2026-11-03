@@ -34,6 +34,11 @@ export function Reference({
     const fit = () => {
       bar.style.zoom = '1';
 
+      // Phone width uses a stacked list at full size instead of a scaled row.
+      if (window.matchMedia('(max-width: 640px)').matches) {
+        return;
+      }
+
       const available = window.innerWidth - 24;
       const needed = bar.scrollWidth;
 
@@ -71,7 +76,7 @@ export function Reference({
     <div
       ref={barRef}
       className={cn(
-        'relative bg-paper-light px-1 py-1 rounded-xl border border-ink/13 text-ink shadow-paper-strong flex items-center',
+        'relative flex items-center rounded-xl border border-ink/13 bg-paper-light px-1 py-1 text-ink shadow-paper-strong mobile:w-[calc(100vw-1.5rem)] mobile:max-w-lg mobile:flex-wrap mobile:justify-center mobile:gap-y-1 mobile:px-2 mobile:py-2 mobile:text-sm',
         className,
       )}
     >
@@ -87,8 +92,13 @@ export function Reference({
       )}
       {[...KIT_ELEMENTS.values()].map((element, index) => {
         return (
-          <div key={element.value} className="flex items-center">
-            {index > 0 && <span className="h-4 w-px shrink-0 bg-ink/20" />}
+          <div
+            key={element.value}
+            className="flex items-center mobile:w-1/4 mobile:shrink-0 mobile:justify-center"
+          >
+            {index > 0 && (
+              <span className="h-4 w-px shrink-0 bg-ink/20 mobile:hidden" />
+            )}
             <div className="px-1 py-0.5 flex items-center gap-1 text-nowrap">
               <FontAwesomeIcon
                 icon={elementIcon(element.type)}
@@ -100,8 +110,8 @@ export function Reference({
           </div>
         );
       })}
-      <div className="flex items-center">
-        <span className="h-4 w-px shrink-0 bg-ink/20" />
+      <div className="flex items-center mobile:w-1/2 mobile:shrink-0 mobile:justify-center">
+        <span className="h-4 w-px shrink-0 bg-ink/20 mobile:hidden" />
         <div className="px-1 py-0.5 flex items-center gap-1 text-nowrap">
           <FontAwesomeIcon
             icon={faGreaterThan}
@@ -112,8 +122,8 @@ export function Reference({
         </div>
       </div>
 
-      <div className="flex items-center">
-        <span className="h-4 w-px shrink-0 bg-ink/20" />
+      <div className="flex items-center mobile:w-1/2 mobile:shrink-0 mobile:justify-center">
+        <span className="h-4 w-px shrink-0 bg-ink/20 mobile:hidden" />
         <div className="px-1 py-0.5 flex items-center gap-1 text-nowrap">
           <div className="font-display flex items-center">
             <div className="text-xl mt-0.75">(</div>
