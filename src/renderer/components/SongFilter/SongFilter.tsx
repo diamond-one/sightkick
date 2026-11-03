@@ -49,7 +49,7 @@ export function SongFilter({
       )}
     >
       <Input
-        className="min-w-40 grow basis-52"
+        className="min-w-40 grow basis-52 mobile:min-w-0 mobile:w-full mobile:basis-full"
         prefix={
           <FontAwesomeIcon icon={faSearch} color="var(--color-text-dim)" />
         }
@@ -61,7 +61,7 @@ export function SongFilter({
         }}
       />
 
-      <div className="flex shrink-0 flex-wrap items-center gap-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 mobile:w-full mobile:shrink">
         <div className="text-text-faint text-[13.5px] whitespace-nowrap">
           {filteredSongsCount} results
         </div>
@@ -81,7 +81,7 @@ export function SongFilter({
             </div>
           }
         >
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {ALL_DIFFICULTIES.map((d) => (
               <Button
                 key={d}

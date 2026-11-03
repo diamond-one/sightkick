@@ -62,7 +62,7 @@ export function SongMenu({
     >
       <IconButton
         data-testid="song-menu-trigger"
-        className="mt-auto"
+        className="mt-auto mobile:h-11 mobile:w-11"
         icon={faEllipsisVertical}
         onClick={(event) => {
           event.preventDefault();
