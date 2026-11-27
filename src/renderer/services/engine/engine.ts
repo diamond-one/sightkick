@@ -4,6 +4,7 @@ import { secondsToTicks } from '../../../chart-parser/timing';
 import { TimeStore } from '../time-store';
 import { AudioPlayer } from '../audio-player/types';
 import { playerFactoryForMode } from '../audio-player/factories';
+import { Subdivision } from '../click-track';
 import { Transport } from './transport';
 import { Judge } from './judge';
 import { GameRenderer } from './game-renderer';
@@ -103,8 +104,18 @@ export class Engine {
     this.renderFrame();
   }
 
-  setClickSettings(volume: number, tone: number): void {
-    this.transport.setClickSettings(volume, tone);
+  setClickSettings(
+    volume: number,
+    tone: number,
+    simpleSubdivision: Subdivision = 'beat',
+    compoundSubdivision: Subdivision = 'beat',
+  ): void {
+    this.transport.setClickSettings(
+      volume,
+      tone,
+      simpleSubdivision,
+      compoundSubdivision,
+    );
   }
 
   setMapping(mapping: InputMapping): void {

@@ -7,6 +7,7 @@ vi.mock('./metronome', () => ({
   renderClickBuffers: vi.fn(() => ({
     downbeat: { id: 'downbeat' },
     beat: { id: 'beat' },
+    subdivision: { id: 'subdivision' },
   })),
 }));
 
@@ -36,7 +37,7 @@ describe('ClickTrack', () => {
   it('schedules a click as a source into the gain node', () => {
     const track = new ClickTrack(context as unknown as AudioContext);
 
-    track.scheduleClick(1.5, true);
+    track.scheduleClick(1.5, 'downbeat');
 
     expect(context.bufferSources).toHaveLength(1);
 
@@ -49,11 +50,13 @@ describe('ClickTrack', () => {
   it('picks the downbeat buffer for accents and the beat buffer otherwise', () => {
     const track = new ClickTrack(context as unknown as AudioContext);
 
-    track.scheduleClick(0, true);
-    track.scheduleClick(0, false);
+    track.scheduleClick(0, 'downbeat');
+    track.scheduleClick(0, 'beat');
+    track.scheduleClick(0, 'subdivision');
 
     expect(context.bufferSources[0].buffer).toEqual({ id: 'downbeat' });
     expect(context.bufferSources[1].buffer).toEqual({ id: 'beat' });
+    expect(context.bufferSources[2].buffer).toEqual({ id: 'subdivision' });
   });
 
   it('never schedules in the past', () => {
@@ -61,7 +64,7 @@ describe('ClickTrack', () => {
 
     const track = new ClickTrack(context as unknown as AudioContext);
 
-    track.scheduleClick(2, false);
+    track.scheduleClick(2, 'beat');
 
     expect(context.bufferSources[0].starts[0].at).toBe(5);
   });
@@ -105,7 +108,7 @@ describe('ClickTrack', () => {
   it('stops pending sources when cleared', () => {
     const track = new ClickTrack(context as unknown as AudioContext);
 
-    track.scheduleClick(10, true);
+    track.scheduleClick(10, 'downbeat');
     track.clearPending();
 
     expect(context.bufferSources[0].stopped).toBe(true);

@@ -33,3 +33,13 @@ export const BEAT_CLICK: ClickSpec = {
   attackGain: 0.5,
   gain: 0.6,
 };
+
+// Quieter than a beat so subdivisions sit under the pulse.
+export const SUBDIVISION_CLICK: ClickSpec = {
+  modes: [
+    { frequency: 1568, amplitude: 1 },
+    { frequency: 3136, amplitude: 0.1, toneWeight: 0.9 },
+  ],
+  attackGain: 0.3,
+  gain: 0.22,
+};

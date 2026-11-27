@@ -46,8 +46,11 @@ describe('beat-grid', () => {
 
     expect(beats).toHaveLength(2);
     expect(beats[0].isDownbeat).toBe(true);
+    expect(beats[0].isCompound).toBe(true);
     expect(beats[1].isDownbeat).toBe(false);
     expect(beats[1].timeSeconds).toBeCloseTo(0.75);
+    expect(beats[0].endTick).toBeCloseTo(720);
+    expect(beats[1].endTick).toBe(1440);
   });
 
   it('spans consecutive measures', () => {

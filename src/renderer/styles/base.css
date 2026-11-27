@@ -74,6 +74,14 @@ textarea,
   background: #141517;
 }
 
+/* A large window has room for the whole settings menu. Smaller windows
+   keep the shorter cap and scroll. */
+@media (min-width: 1101px) {
+  .settings-menu {
+    --settings-menu-max-height: calc(100vh - 5rem);
+  }
+}
+
 /* The gear sits on the right. A wide popup aligned to it runs off the left
    of a narrow window, so pin the panel to both edges instead. */
 @media (max-width: 900px) {

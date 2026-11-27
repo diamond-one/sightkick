@@ -19,12 +19,14 @@ import { useApp } from '../../context/AppContext';
 import { useInput } from '../../context/InputContext';
 import { useSongViewSettings } from '../../context/SongViewSettingsContext';
 import { ClickControls } from '../../components/ClickControls';
+import { Subdivision, isSubdivision } from '../../services/click-track';
 import { usePersisted } from '../../hooks/usePersisted';
+import { useThrottledCurrentTime } from '../../hooks/useCurrentTime';
 import { useSongLoader } from '../../hooks/useSongLoader';
 import { useEngine } from '../../hooks/useEngine';
 import { useVolumeControls } from '../../hooks/useVolumeControls';
 import { useMuteToggle } from '../../hooks/useMuteToggle';
-import { ticksToSeconds } from '../../../chart-parser/timing';
+import { secondsToTicks, ticksToSeconds } from '../../../chart-parser/timing';
 import { calculateAccuracy } from '../../scoring';
 import { usePracticeSession } from '../../hooks/usePracticeSession';
 import { useSheetMusic } from '../../hooks/useSheetMusic';
@@ -157,6 +159,37 @@ export function SongView() {
   );
   const [clickVolume, setClickVolume] = usePersisted('settings.clickVolume', 0);
   const [clickTone, setClickTone] = usePersisted('settings.clickTone', 50);
+  const [simpleSubdivision, setSimpleSubdivision] = usePersisted<Subdivision>(
+    'settings.clickSubdivisionSimple',
+    'beat',
+  );
+  const [compoundSubdivision, setCompoundSubdivision] =
+    usePersisted<Subdivision>('settings.clickSubdivisionCompound', 'beat');
+  const playheadSeconds = useThrottledCurrentTime(timeStore, 250);
+  const meter = useMemo(() => {
+    const fallback = { isCompound: false, denominator: 4 };
+
+    if (!chart || measures.length === 0) {
+      return fallback;
+    }
+
+    const tick = secondsToTicks(
+      Math.max(0, playheadSeconds - delaySeconds),
+      chart.resolution,
+      chart.tempos,
+    );
+    const measure =
+      measures.find((item) => tick >= item.startTick && tick < item.endTick) ??
+      measures[0];
+
+    return {
+      isCompound: measure.isCompound,
+      denominator: measure.timeSig?.[1] ?? 4,
+    };
+  }, [chart, measures, playheadSeconds, delaySeconds]);
+  const subdivision = meter.isCompound
+    ? compoundSubdivision
+    : simpleSubdivision;
   const [masterVolume, setMasterVolume] = usePersisted(
     'settings.masterVolume',
     100,
@@ -362,8 +395,13 @@ export function SongView() {
   useEffect(() => () => exportPdfOffRef.current?.(), []);
 
   useEffect(() => {
-    engine?.setClickSettings(clickVolume / 100, clickTone / 100);
-  }, [engine, clickVolume, clickTone]);
+    engine?.setClickSettings(
+      clickVolume / 100,
+      clickTone / 100,
+      isSubdivision(simpleSubdivision) ? simpleSubdivision : 'beat',
+      isSubdivision(compoundSubdivision) ? compoundSubdivision : 'beat',
+    );
+  }, [engine, clickVolume, clickTone, simpleSubdivision, compoundSubdivision]);
 
   useEffect(() => {
     if (isReady) {
@@ -507,6 +545,16 @@ export function SongView() {
                 onVolumeChange={setClickVolume}
                 tone={clickTone}
                 onToneChange={setClickTone}
+                isCompound={meter.isCompound}
+                denominator={meter.denominator}
+                subdivision={isSubdivision(subdivision) ? subdivision : 'beat'}
+                onSubdivisionChange={(value) => {
+                  if (meter.isCompound) {
+                    setCompoundSubdivision(value);
+                  } else {
+                    setSimpleSubdivision(value);
+                  }
+                }}
               />
             }
             masterVolumeControl={

@@ -16,14 +16,20 @@ describe('metronome', () => {
     vi.unstubAllGlobals();
   });
 
-  it('renders a downbeat and beat buffer', () => {
-    const { downbeat, beat } = renderClickBuffers(
+  it('renders a downbeat, beat, and quieter subdivision buffer', () => {
+    const { downbeat, beat, subdivision } = renderClickBuffers(
       context as unknown as AudioContext,
       0.5,
     );
 
     expect(downbeat.length).toBeGreaterThan(0);
     expect(beat.length).toBeGreaterThan(0);
+
+    const peak = (buffer: AudioBuffer) =>
+      Math.max(...Array.from(buffer.getChannelData(0)).map(Math.abs));
+
+    expect(peak(subdivision)).toBeGreaterThan(0);
+    expect(peak(subdivision)).toBeLessThan(peak(beat));
   });
 
   it('rings longer at higher tone (more sustain)', () => {

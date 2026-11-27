@@ -47,3 +47,28 @@ npm-debug.log.*
 # Storybook build output
 storybook-static
 .remarque/
+
+# --- media and binaries stay out of Git (source-only policy) ---
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.psd
+*.tif
+*.tiff
+*.exr
+*.mp4
+*.mov
+*.webm
+*.wav
+*.mp3
+*.flac
+*.aif
+*.aiff
+*.zip
+*.blend
+*.fbx
+*.docx
+*.xlsx
+*.pdf

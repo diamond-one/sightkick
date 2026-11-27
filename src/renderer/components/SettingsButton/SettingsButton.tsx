@@ -55,12 +55,13 @@ export const SettingsButton = memo(function Settings({
         onOpenChange={popoverOpenChange(setIsOpen)}
         trigger="click"
         placement="bottomRight"
-        classNames={{ root: 'settings-popover' }}
+        classNames={{ root: 'settings-popover', container: 'settings-menu' }}
         styles={{
           ...popoverStyles,
           container: {
             ...popoverStyles.container,
-            maxHeight: 'min(32rem, calc(100vh - 5rem))',
+            maxHeight:
+              'var(--settings-menu-max-height, min(32rem, calc(100vh - 5rem)))',
             overflow: 'auto',
           },
         }}

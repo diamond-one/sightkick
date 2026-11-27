@@ -8,6 +8,7 @@ import {
   DEFAULT_SAMPLE_RATE,
   DOWNBEAT_CLICK,
   MASTER_GAIN,
+  SUBDIVISION_CLICK,
   MAX_DURATION_SECONDS,
 } from './constants';
 
@@ -63,5 +64,6 @@ export function renderClickBuffers(
   return {
     downbeat: renderClick(ctx, DOWNBEAT_CLICK, clamped),
     beat: renderClick(ctx, BEAT_CLICK, clamped),
+    subdivision: renderClick(ctx, SUBDIVISION_CLICK, clamped),
   };
 }

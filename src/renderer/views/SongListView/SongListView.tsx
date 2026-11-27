@@ -143,12 +143,8 @@ export function SongListView() {
       setSort(next);
     }
   };
-  const searchCharter = (charter: string) => {
-    setNameFilter(charter);
-
-    if (libraryMode !== 'online') {
-      setLibraryMode('online');
-    }
+  const searchCurrentList = (query: string) => {
+    setNameFilter(query);
   };
   const openSort = () => {
     if (!sortAvailable) {
@@ -398,7 +394,8 @@ export function SongListView() {
                   previewingId={previewingId}
                   onPreview={handlePreview}
                   onDelete={handleDelete}
-                  onCharterClick={searchCharter}
+                  onCharterClick={searchCurrentList}
+                  onArtistClick={searchCurrentList}
                   focusedIndex={!isSortOpen ? focusedSongIndex : undefined}
                 />
               ) : (

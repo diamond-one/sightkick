@@ -9,9 +9,12 @@ import {
 import { TimeStore } from '../time-store';
 import { secondsToTicks, ticksToSeconds } from '../../../chart-parser/timing';
 import {
+  ClickAccent,
   ClickTrack,
   CountInScheduler,
   DEFAULT_CLICK_TONE,
+  Subdivision,
+  clicksPerBeat,
 } from '../click-track';
 import { Beat, getBeatGrid, getCountInInfo } from '../beat-grid';
 import {
@@ -49,6 +52,8 @@ export class Transport {
   private clickTrack: ClickTrack | undefined;
   private clickVolume = 0;
   private clickTone = DEFAULT_CLICK_TONE;
+  private simpleSubdivision: Subdivision = 'beat';
+  private compoundSubdivision: Subdivision = 'beat';
   private beatGrid: Beat[] = [];
   private nextBeatIndex = 0;
   private countIn: CountInScheduler | undefined;
@@ -89,11 +94,26 @@ export class Transport {
     this.syncPlayerLoop();
   }
 
-  setClickSettings(volume: number, tone: number): void {
+  setClickSettings(
+    volume: number,
+    tone: number,
+    simpleSubdivision: Subdivision = 'beat',
+    compoundSubdivision: Subdivision = 'beat',
+  ): void {
+    const subdivisionChanged =
+      simpleSubdivision !== this.simpleSubdivision ||
+      compoundSubdivision !== this.compoundSubdivision;
+
     this.clickVolume = Math.max(0, Math.min(1, volume));
     this.clickTone = tone;
+    this.simpleSubdivision = simpleSubdivision;
+    this.compoundSubdivision = compoundSubdivision;
     this.clickTrack?.setTone(tone);
     this.applyClickVolume();
+
+    if (subdivisionChanged && this.state === 'playing') {
+      this.resyncClickScheduling(this.position);
+    }
   }
 
   private applyClickVolume(): void {
@@ -314,12 +334,16 @@ export class Transport {
       return;
     }
 
-    const { beats, beatDurationSeconds } = getCountInInfo(
+    const { beats, beatDurationSeconds, isCompound } = getCountInInfo(
       tick,
       this.measures,
       this.chart,
     );
     const realBeatDuration = beatDurationSeconds / this.playbackSpeed;
+    const divisions = clicksPerBeat(
+      isCompound ? this.compoundSubdivision : this.simpleSubdivision,
+      isCompound,
+    );
     const now = ctx.currentTime;
 
     this.countIn = new CountInScheduler(now, beats, realBeatDuration);
@@ -337,7 +361,15 @@ export class Transport {
     );
 
     for (let i = 0; i < beats; i += 1) {
-      this.clickTrack.scheduleClick(now + i * realBeatDuration, i === 0);
+      for (let step = 0; step < divisions; step += 1) {
+        const accent: ClickAccent =
+          step === 0 ? (i === 0 ? 'downbeat' : 'beat') : 'subdivision';
+
+        this.clickTrack.scheduleClick(
+          now + (i + step / divisions) * realBeatDuration,
+          accent,
+        );
+      }
     }
 
     this.state = 'counting-in';
@@ -579,15 +611,47 @@ export class Transport {
       }
 
       const beat = this.beatGrid[this.nextBeatIndex];
-      const songTime =
+      const beatSongTime =
         beat.timeSeconds + this.delaySeconds + this.loopBeatOffset;
-      const contextTime = this.audioPlayer.contextTimeForSongTime(songTime);
+      const beatContextTime =
+        this.audioPlayer.contextTimeForSongTime(beatSongTime);
 
-      if (contextTime > horizon) {
+      if (beatContextTime > horizon) {
         break;
       }
 
-      this.clickTrack.scheduleClick(contextTime, beat.isDownbeat);
+      const divisions = clicksPerBeat(
+        beat.isCompound ? this.compoundSubdivision : this.simpleSubdivision,
+        beat.isCompound,
+      );
+
+      for (let step = 0; step < divisions; step += 1) {
+        const tick =
+          beat.startTick + ((beat.endTick - beat.startTick) * step) / divisions;
+        const unwrapped = this.tickToTime(tick);
+
+        if (
+          loopEndTime !== undefined &&
+          loopSpan > 0 &&
+          unwrapped >= loopEndTime - 1e-4
+        ) {
+          continue;
+        }
+
+        const contextTime = this.audioPlayer.contextTimeForSongTime(
+          unwrapped + this.loopBeatOffset,
+        );
+
+        if (contextTime + 0.05 < ctx.currentTime) {
+          continue;
+        }
+
+        const accent: ClickAccent =
+          step === 0 ? (beat.isDownbeat ? 'downbeat' : 'beat') : 'subdivision';
+
+        this.clickTrack.scheduleClick(contextTime, accent);
+      }
+
       this.nextBeatIndex += 1;
     }
   }

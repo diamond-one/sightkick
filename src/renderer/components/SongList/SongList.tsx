@@ -26,6 +26,7 @@ export interface SongListProps {
   onPreview?: (id: string) => void;
   onDelete?: (id: string) => void;
   onCharterClick?: (charter: string) => void;
+  onArtistClick?: (artist: string) => void;
 }
 
 const LOAD_MORE_THRESHOLD = 2;
@@ -50,6 +51,7 @@ export function SongList({
   onPreview,
   onDelete,
   onCharterClick,
+  onArtistClick,
 }: SongListProps) {
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -123,6 +125,7 @@ export function SongList({
                 onPreview={onPreview}
                 onDelete={onDelete}
                 onCharterClick={onCharterClick}
+                onArtistClick={onArtistClick}
               />
             </div>
           );

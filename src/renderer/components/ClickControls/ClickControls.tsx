@@ -6,12 +6,19 @@ import themedark from '../../theme';
 import { DEFAULT_UNMUTE_VOLUME } from './constants';
 import { AudioVolume } from '../AudioVolume';
 import { useMuteToggle } from '../../hooks/useMuteToggle';
+import { cn } from '../../cn';
+import { Subdivision, subdivisionChoices } from '../../services/click-track';
+import { NoteIcon } from './NoteIcon';
 
 export interface ClickControlsProps {
   volume: number;
   onVolumeChange: (value: number) => void;
   tone: number;
   onToneChange: (value: number) => void;
+  isCompound: boolean;
+  denominator: number;
+  subdivision: Subdivision;
+  onSubdivisionChange: (value: Subdivision) => void;
 }
 
 export function ClickControls({
@@ -19,6 +26,10 @@ export function ClickControls({
   onVolumeChange,
   tone,
   onToneChange,
+  isCompound,
+  denominator,
+  subdivision,
+  onSubdivisionChange,
 }: ClickControlsProps) {
   const { isMuted, toggleMute, handleChange } = useMuteToggle(
     volume,
@@ -38,7 +49,10 @@ export function ClickControls({
             Click Track
           </div>
 
-          <Tooltip title="A metronome click on every beat" placement="bottom">
+          <Tooltip
+            title="Clicks on the beat stay strong. Notes between the beats are quieter."
+            placement="bottom"
+          >
             <FontAwesomeIcon
               icon={faInfoCircle}
               color={themedark.color.textFaint}
@@ -49,6 +63,33 @@ export function ClickControls({
           className="grow h-px"
           style={{ background: 'var(--gradient-faint-fade)' }}
         />
+      </div>
+      <div
+        className="flex flex-wrap justify-center gap-2"
+        role="group"
+        aria-label="Click subdivision"
+      >
+        {subdivisionChoices(isCompound, denominator).map((choice) => {
+          const selected = choice.id === subdivision;
+
+          return (
+            <Tooltip key={choice.id} title={choice.label} placement="bottom">
+              <button
+                type="button"
+                aria-pressed={selected}
+                aria-label={choice.label}
+                data-testid={`subdivision-${choice.id}`}
+                className={cn(
+                  'flex h-11 w-11 items-center justify-center rounded-lg border-0 text-white cursor-pointer',
+                  selected ? 'bg-accent' : 'bg-[#7e8b96] hover:bg-[#8d99a3]',
+                )}
+                onClick={() => onSubdivisionChange(choice.id)}
+              >
+                <NoteIcon glyph={choice.glyph} />
+              </button>
+            </Tooltip>
+          );
+        })}
       </div>
       <div className="grid min-w-0 grid-cols-[minmax(0,max-content)_minmax(0,1fr)_max-content_max-content] items-center gap-x-2 gap-y-2 @max-[26rem]:grid-cols-[minmax(0,1fr)_auto_auto]">
         <AudioVolume

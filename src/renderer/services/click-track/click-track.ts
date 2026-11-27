@@ -1,5 +1,5 @@
 import { renderClickBuffers } from './metronome';
-import { ClickBuffers } from './types';
+import { ClickAccent, ClickBuffers } from './types';
 import { DEFAULT_CLICK_TONE } from './constants';
 
 export class ClickTrack {
@@ -24,10 +24,10 @@ export class ClickTrack {
     this.buffers = renderClickBuffers(this.context, tone);
   }
 
-  scheduleClick(atContextTime: number, isDownbeat: boolean): void {
+  scheduleClick(atContextTime: number, accent: ClickAccent): void {
     const source = this.context.createBufferSource();
 
-    source.buffer = isDownbeat ? this.buffers.downbeat : this.buffers.beat;
+    source.buffer = this.buffers[accent];
     source.connect(this.gain);
     source.addEventListener('ended', () => this.pending.delete(source));
     source.start(Math.max(atContextTime, this.context.currentTime));

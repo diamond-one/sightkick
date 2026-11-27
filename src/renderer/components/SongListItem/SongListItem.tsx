@@ -42,6 +42,7 @@ export interface SongListItemProps {
   onPreview?: (id: string) => void;
   onDelete?: (id: string) => void;
   onCharterClick?: (charter: string) => void;
+  onArtistClick?: (artist: string) => void;
 }
 
 const NARROW_WINDOW = '(max-width: 1100px)';
@@ -131,10 +132,12 @@ export function SongListItem({
   onPreview,
   onDelete,
   onCharterClick,
+  onArtistClick,
 }: SongListItemProps) {
   const local = 'source' in songData ? undefined : songData;
   const { albumCover, id, name, artist, charter, drumDifficulty } = songData;
   const charterLabel = charter ? stripColorMarkup(charter) : '';
+  const artistName = artist ? stripColorMarkup(artist) : '';
   const narrow = useMediaQuery(NARROW_WINDOW);
   const mobile = useMediaQuery(MOBILE_WINDOW);
   const displayName =
@@ -297,9 +300,21 @@ export function SongListItem({
           >
             {displayName}
           </div>
-          <div className="truncate text-sm text-text-muted font-ui">
-            {artist}
-          </div>
+          {artistName ? (
+            <button
+              type="button"
+              data-testid="artist-link"
+              title={`Search songs by ${artistName}`}
+              className="max-w-full truncate border-0 bg-transparent p-0 text-left font-ui text-sm text-text-muted cursor-pointer hover:text-accent hover:underline"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onArtistClick?.(artistName);
+              }}
+            >
+              {artistName}
+            </button>
+          ) : null}
         </div>
 
         {(charterLabel || local) && (

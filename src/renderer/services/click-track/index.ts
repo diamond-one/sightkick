@@ -6,4 +6,12 @@ export { renderClickBuffers } from './metronome';
 
 export { DEFAULT_CLICK_TONE } from './constants';
 
-export type { ClickBuffers } from './types';
+export type { ClickAccent, ClickBuffers } from './types';
+
+export {
+  clicksPerBeat,
+  isSubdivision,
+  subdivisionChoices,
+} from './subdivision';
+
+export type { Subdivision, SubdivisionChoice } from './subdivision';

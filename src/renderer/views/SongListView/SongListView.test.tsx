@@ -614,18 +614,24 @@ describe('SongListView — preview arrows', () => {
 });
 
 describe('SongListView — charter search', () => {
-  it('opens the global search for that charter', async () => {
+  it('searches the user library for that charter', () => {
     const view = setupSongListView({ online: [makeEnchorChart('x')] });
 
-    view.loadSongs([makeListSong('a', { charter: 'MrDrummerboy97' })]);
-    fireEvent.click(screen.getByTestId('charter-link'));
-
-    expect(screen.getByTestId('song-search')).toHaveValue('MrDrummerboy97');
-    expect(screen.getByTestId('mode-online').className).toContain(
-      'ant-btn-primary',
+    view.loadSongs([
+      makeListSong('a', { charter: 'MrDrummerboy97' }),
+      makeListSong('b', { charter: 'SomeoneElse' }),
+    ]);
+    fireEvent.click(
+      within(screen.getByTestId('song-item-a')).getByTestId('charter-link'),
     );
 
-    expect(await screen.findByText('Name x')).toBeInTheDocument();
+    expect(screen.getByTestId('song-search')).toHaveValue('MrDrummerboy97');
+    expect(screen.getByTestId('mode-local').className).toContain(
+      'ant-btn-primary',
+    );
+    expect(screen.getByText('Name a')).toBeInTheDocument();
+    expect(screen.queryByText('Name b')).not.toBeInTheDocument();
+    expect(screen.queryByText('Name x')).not.toBeInTheDocument();
   });
 
   it('stays on the global search when a charter there is clicked', async () => {
@@ -640,6 +646,36 @@ describe('SongListView — charter search', () => {
     fireEvent.click(screen.getByTestId('charter-link'));
 
     expect(screen.getByTestId('song-search')).toHaveValue('Harmonix');
+    expect(screen.getByTestId('mode-online').className).toContain(
+      'ant-btn-primary',
+    );
+  });
+
+  it('searches the open list for an artist', async () => {
+    const view = setupSongListView({
+      online: [makeEnchorChart('x', { artist: 'Metallica' })],
+    });
+
+    view.loadSongs([
+      makeListSong('a', { artist: 'Metallica' }),
+      makeListSong('b', { artist: 'Slayer' }),
+    ]);
+    fireEvent.click(
+      within(screen.getByTestId('song-item-a')).getByTestId('artist-link'),
+    );
+
+    expect(screen.getByTestId('song-search')).toHaveValue('Metallica');
+    expect(screen.getByTestId('mode-local').className).toContain(
+      'ant-btn-primary',
+    );
+    expect(screen.getByText('Name a')).toBeInTheDocument();
+    expect(screen.queryByText('Name b')).not.toBeInTheDocument();
+
+    view.selectMode('online');
+    await screen.findByText('Name x');
+    fireEvent.click(screen.getByTestId('artist-link'));
+
+    expect(screen.getByTestId('song-search')).toHaveValue('Metallica');
     expect(screen.getByTestId('mode-online').className).toContain(
       'ant-btn-primary',
     );

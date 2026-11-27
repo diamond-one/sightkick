@@ -25,9 +25,14 @@ export function getBeatGrid(measures: Measure[], chart: TimingChart): Beat[] {
         break;
       }
 
+      const nextTick = measure.startTick + (span * (i + 1)) / count;
+
       beats.push({
         timeSeconds: ticksToSeconds(tick, chart.resolution, chart.tempos),
+        startTick: tick,
+        endTick: Math.min(nextTick, boundary),
         isDownbeat: i === 0,
+        isCompound: measure.isCompound,
       });
     }
   }
@@ -53,5 +58,9 @@ export function getCountInInfo(
     ticksToSeconds(measure.endTick, chart.resolution, chart.tempos) -
     ticksToSeconds(measure.startTick, chart.resolution, chart.tempos);
 
-  return { beats, beatDurationSeconds: measureSeconds / beats };
+  return {
+    beats,
+    beatDurationSeconds: measureSeconds / beats,
+    isCompound: measure.isCompound,
+  };
 }
